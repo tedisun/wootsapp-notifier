@@ -157,6 +157,7 @@ class WTAN_Notifier {
 			'{monnaie}'         => get_woocommerce_currency_symbol(),
 			'{produits}'        => implode( "\n", $lines ),
 			'{nb_articles}'     => (string) $order->get_item_count(),
+			'{note_client}'     => $order->get_customer_note(),
 			'{licences}'        => $this->build_licences_text( (int) $order->get_id() ),
 			'{telechargements}' => $this->build_downloads_text( $order ),
 		];
@@ -320,6 +321,7 @@ class WTAN_Notifier {
 			'{monnaie}'         => 'Symbole de la monnaie WooCommerce',
 			'{produits}'        => 'Liste des produits (une ligne par article)',
 			'{nb_articles}'     => 'Nombre total d\'articles',
+			'{note_client}'     => 'Note laissée par le client lors de la commande (vide si absent)',
 			'{licences}'        => 'Licences LicenceFlow (vide si non configuré)',
 			'{telechargements}' => 'Liens de téléchargement du produit (guides, Google Docs, etc.)',
 		];

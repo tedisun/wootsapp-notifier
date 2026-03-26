@@ -6,6 +6,18 @@ Format : [Versioning sémantique](https://semver.org/lang/fr/)
 
 ---
 
+## [1.4.0] — 2026-03-26
+
+### Ajouté
+- Variable `{note_client}` : affiche la note laissée par le client lors de la commande (`$order->get_customer_note()`) — vide automatiquement si aucune note
+- **Mise à jour automatique depuis GitHub** : WordPress détecte désormais les nouvelles versions publiées sur `github.com/tedisun/wootsapp-notifier` et les propose via la page Plugins > Mises à jour
+  - Nouvelle classe `WTAN_Updater` — hook `pre_set_site_transient_update_plugins`
+  - Modale "Voir les détails" alimentée par les informations de la release GitHub
+  - Cache 12h pour éviter les appels répétés à l'API GitHub
+- Release ZIP restructuré : les fichiers sont maintenant dans un sous-dossier `wootsapp-notifier/` (requis par WordPress pour l'installation automatique)
+
+---
+
 ## [1.3.0] — 2026-03-26
 
 ### Ajouté
