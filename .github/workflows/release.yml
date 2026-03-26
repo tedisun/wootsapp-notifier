@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ZIP
+        run: |
+          PLUGIN_SLUG="wootsapp-notifier"
+          VERSION="${GITHUB_REF_NAME}"
+
+          mkdir -p dist
+
+          zip -r "dist/${PLUGIN_SLUG}.zip" . \
+            --exclude "*.git*" \
+            --exclude ".github/*" \
+            --exclude "node_modules/*" \
+            --exclude "vendor/*" \
+            --exclude "dist/*" \
+            --exclude "CONTEXT.md" \
+            --exclude "CLAUDE.md" \
+            --exclude "*.log"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "WootsApp Notifier ${{ github.ref_name }}"
+          body: |
+            ## WootsApp Notifier ${{ github.ref_name }}
+
+            Voir [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) pour le détail des changements.
+          files: dist/wootsapp-notifier.zip
+          fail_on_unmatched_files: true
