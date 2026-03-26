@@ -6,6 +6,15 @@ Format : [Versioning sémantique](https://semver.org/lang/fr/)
 
 ---
 
+## [1.3.0] — 2026-03-26
+
+### Ajouté
+- Variable `{telechargements}` : affiche les liens de téléchargement (Google Docs, Drive, PDF…) associés aux produits de la commande
+- Format : `📄 Nom du guide\nURL` — une entrée par fichier téléchargeable configuré sur le produit WooCommerce
+- Vide automatiquement si aucun produit de la commande n'a de téléchargement associé
+
+---
+
 ## [1.2.0] — 2026-03-26
 
 ### Ajouté

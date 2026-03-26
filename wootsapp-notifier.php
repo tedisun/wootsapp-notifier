@@ -3,7 +3,7 @@
  * Plugin Name: WootsApp Notifier
  * Plugin URI:  https://github.com/tedisun/wootsapp-notifier
  * Description: Envoie automatiquement une notification WhatsApp au client dès que sa commande WooCommerce passe au statut "Terminé". Supporte Evolution API et l'intégration LicenceFlow.
- * Version:     1.2.0
+ * Version:     1.3.0
  * Author:      Tedisun SARL
  * Author URI:  https://tedisun.com
  * License:     GPL-2.0-or-later
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WTAN_VERSION', '1.2.0' );
+define( 'WTAN_VERSION', '1.3.0' );
 define( 'WTAN_PLUGIN_FILE', __FILE__ );
 define( 'WTAN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 

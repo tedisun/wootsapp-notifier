@@ -158,7 +158,53 @@ class WTAN_Notifier {
 			'{produits}'        => implode( "\n", $lines ),
 			'{nb_articles}'     => (string) $order->get_item_count(),
 			'{licences}'        => $this->build_licences_text( (int) $order->get_id() ),
+			'{telechargements}' => $this->build_downloads_text( $order ),
 		];
+	}
+
+	/**
+	 * Compose le bloc des liens de téléchargement pour la commande.
+	 *
+	 * Parcourt les articles commandés, récupère les fichiers téléchargeables
+	 * configurés sur chaque produit WooCommerce (Google Docs, Drive, etc.)
+	 * et retourne un bloc formaté prêt à insérer dans le message.
+	 *
+	 * Retourne une chaîne vide si aucun produit n'a de téléchargement associé.
+	 *
+	 * @param  WC_Abstract_Order $order Commande WooCommerce.
+	 * @return string
+	 */
+	private function build_downloads_text( WC_Abstract_Order $order ): string {
+		$lines = [];
+
+		foreach ( $order->get_items() as $item ) {
+			/** @var WC_Order_Item_Product $item */
+			$product = $item->get_product();
+
+			if ( ! $product || ! $product->is_downloadable() ) {
+				continue;
+			}
+
+			$downloads = $product->get_downloads();
+
+			if ( empty( $downloads ) ) {
+				continue;
+			}
+
+			foreach ( $downloads as $download ) {
+				$name = $download->get_name();
+				$url  = $download->get_file(); // URL directe (Google Docs, Drive, etc.)
+
+				if ( empty( $url ) ) {
+					continue;
+				}
+
+				// Afficher le nom du guide sur une ligne, l'URL sur la suivante.
+				$lines[] = '📄 ' . $name . "\n" . $url;
+			}
+		}
+
+		return implode( "\n\n", $lines );
 	}
 
 	/**
@@ -275,6 +321,7 @@ class WTAN_Notifier {
 			'{produits}'        => 'Liste des produits (une ligne par article)',
 			'{nb_articles}'     => 'Nombre total d\'articles',
 			'{licences}'        => 'Licences LicenceFlow (vide si non configuré)',
+			'{telechargements}' => 'Liens de téléchargement du produit (guides, Google Docs, etc.)',
 		];
 
 		return $vars;
