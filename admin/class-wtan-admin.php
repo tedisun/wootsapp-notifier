@@ -15,6 +15,7 @@ class WTAN_Admin {
 		add_action( 'admin_menu', [ $this, 'register_menus' ] );
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 		add_action( 'admin_init', [ $this, 'handle_clear_logs' ] );
+		add_action( 'admin_init', [ $this, 'handle_export_csv' ] );
 		add_action( 'wp_ajax_wtan_test_send', [ $this, 'ajax_test_send' ] );
 		add_action( 'admin_footer', [ $this, 'inline_script' ] );
 	}
@@ -351,17 +352,32 @@ class WTAN_Admin {
 				</div>
 			<?php endif; ?>
 
-			<form method="post" style="margin-bottom:16px;">
-				<?php wp_nonce_field( 'wtan_clear_logs', 'wtan_clear_logs_nonce' ); ?>
-				<input type="hidden" name="wtan_action" value="clear_logs" />
-				<?php submit_button(
-					__( 'Vider les logs', 'wootsapp-notifier' ),
-					'delete',
-					'submit',
-					false,
-					[ 'onclick' => 'return confirm("Supprimer tous les logs ?")' ]
-				); ?>
-			</form>
+			<div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
+				<form method="post">
+					<?php wp_nonce_field( 'wtan_clear_logs', 'wtan_clear_logs_nonce' ); ?>
+					<input type="hidden" name="wtan_action" value="clear_logs" />
+					<?php submit_button(
+						__( 'Vider les logs', 'wootsapp-notifier' ),
+						'delete',
+						'submit',
+						false,
+						[ 'onclick' => 'return confirm("Supprimer tous les logs ?")' ]
+					); ?>
+				</form>
+				<?php
+				$export_url = wp_nonce_url(
+					add_query_arg(
+						[ 'page' => 'wtan-logs', 'wtan_action' => 'export_csv' ],
+						admin_url( 'admin.php' )
+					),
+					'wtan_export_csv',
+					'wtan_export_nonce'
+				);
+				?>
+				<a href="<?php echo esc_url( $export_url ); ?>" class="button button-secondary">
+					⬇️ <?php esc_html_e( 'Exporter en CSV', 'wootsapp-notifier' ); ?>
+				</a>
+			</div>
 
 			<p>
 				<?php printf(
@@ -456,6 +472,53 @@ class WTAN_Admin {
 			'page'         => 'wtan-logs',
 			'wtan_cleared' => '1',
 		], admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
+	// -------------------------------------------------------------------------
+	// Export CSV (GET)
+	// -------------------------------------------------------------------------
+
+	public function handle_export_csv(): void {
+		if (
+			! isset( $_GET['wtan_action'] ) ||
+			'export_csv' !== $_GET['wtan_action']
+		) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Permission refusée.' );
+		}
+
+		check_admin_referer( 'wtan_export_csv', 'wtan_export_nonce' );
+
+		$rows     = WTAN_Logger::get_all();
+		$filename = 'wootsapp-logs-' . gmdate( 'Y-m-d' ) . '.csv';
+
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		$output = fopen( 'php://output', 'w' );
+
+		// BOM UTF-8 pour compatibilité Excel.
+		fputs( $output, "\xEF\xBB\xBF" );
+
+		fputcsv( $output, [ 'Date', 'Commande', 'Téléphone', 'Statut', 'Détail / Erreur' ] );
+
+		foreach ( $rows as $row ) {
+			fputcsv( $output, [
+				$row->sent_at,
+				'#' . (int) $row->order_id,
+				$row->phone,
+				'sent' === $row->status ? 'Envoyé' : 'Échec',
+				$row->error_msg ?? '',
+			] );
+		}
+
+		fclose( $output );
 		exit;
 	}
 

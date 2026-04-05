@@ -89,6 +89,19 @@ class WTAN_Logger {
 	}
 
 	/**
+	 * Récupère tous les logs (sans pagination) pour l'export.
+	 *
+	 * @return array
+	 */
+	public static function get_all(): array {
+		global $wpdb;
+		$table = $wpdb->prefix . self::TABLE;
+		return $wpdb->get_results(
+			"SELECT * FROM {$table} ORDER BY sent_at DESC"
+		) ?: [];
+	}
+
+	/**
 	 * Supprime tous les logs.
 	 */
 	public static function clear(): void {

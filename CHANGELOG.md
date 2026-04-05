@@ -6,6 +6,17 @@ Format : [Versioning sémantique](https://semver.org/lang/fr/)
 
 ---
 
+## [1.5.0] — 2026-04-05
+
+### Ajouté
+- **Export CSV des logs** : bouton "Exporter en CSV" dans la page Logs — génère un fichier `wootsapp-logs-YYYY-MM-DD.csv` avec BOM UTF-8 (compatible Excel / Google Sheets)
+- **Normalisation téléphone par pays de facturation** : `WTAN_Phone::normalize()` accepte désormais le code pays ISO (ex: `CI`, `SN`, `FR`) et utilise la map d'indicatifs pour préfixer automatiquement les numéros locaux sans indicatif
+  - Map couvrant 23 pays : BF, CI, SN, ML, GN, TG, BJ, NE, CM, FR, MA, GH, NG, CD, CG, MR, SL, LR, RW, KE, TZ, BE, CH
+  - Ex: `0768319147` avec pays `CI` → `225768319147@s.whatsapp.net` (au lieu d'échouer)
+  - Compatibilité ascendante : 8 chiffres sans pays toujours traités comme BF
+
+---
+
 ## [1.4.0] — 2026-03-26
 
 ### Ajouté

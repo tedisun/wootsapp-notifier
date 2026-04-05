@@ -64,7 +64,7 @@ class WTAN_Notifier {
 			return;
 		}
 
-		$phone = WTAN_Phone::normalize( $raw_phone );
+		$phone = WTAN_Phone::normalize( $raw_phone, (string) $order->get_billing_country() );
 
 		if ( false === $phone ) {
 			$error = sprintf( 'Numéro invalide ou non reconnu : "%s"', $raw_phone );
