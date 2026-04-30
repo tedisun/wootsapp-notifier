@@ -54,6 +54,8 @@ class WTAN_Phone {
 		'TZ' => [ 'dial' => '255', 'local' => 9  ],
 		'BE' => [ 'dial' => '32',  'local' => 9  ],
 		'CH' => [ 'dial' => '41',  'local' => 9  ],
+		'TD' => [ 'dial' => '235', 'local' => 8  ],
+		'CF' => [ 'dial' => '236', 'local' => 8  ],
 	];
 
 	/**

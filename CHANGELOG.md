@@ -6,6 +6,19 @@ Format : [Versioning sémantique](https://semver.org/lang/fr/)
 
 ---
 
+## [1.6.0] — 2026-04-30
+
+### Ajouté
+- **Infos de licence dans le message WhatsApp** : la variable `{licences}` affiche désormais deux informations supplémentaires issues de LicenceFlow :
+  - 🔁 Nombre d'utilisations autorisées (`delivre_x_times`) — affiché uniquement si > 1
+  - ⏳ Date limite d'utilisation (`expiration_date`) — affichée si renseignée, formatée en français (`j F Y`)
+  - La note manuelle `license_note` reste affichée en dernier comme auparavant
+- **Normalisation téléphone** : ajout de deux pays à la map :
+  - TD — Tchad (+235, 8 chiffres locaux)
+  - CF — République Centrafricaine (+236, 8 chiffres locaux)
+
+---
+
 ## [1.5.0] — 2026-04-05
 
 ### Ajouté

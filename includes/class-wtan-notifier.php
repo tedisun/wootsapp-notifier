@@ -251,6 +251,15 @@ class WTAN_Notifier {
 
 			$entry = '🔑 ' . $product_name . "\n" . $key_display;
 
+			$uses = (int) ( $lic['delivre_x_times'] ?? 1 );
+			if ( $uses > 1 ) {
+				$entry .= "\n🔁 Utilisable " . $uses . ' fois';
+			}
+
+			if ( ! empty( $lic['expiration_date'] ) ) {
+				$entry .= "\n⏳ À utiliser avant le " . date_i18n( 'j F Y', strtotime( $lic['expiration_date'] ) );
+			}
+
 			if ( ! empty( $lic['license_note'] ) ) {
 				$entry .= "\n📝 " . $lic['license_note'];
 			}
