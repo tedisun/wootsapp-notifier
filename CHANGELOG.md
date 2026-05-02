@@ -6,6 +6,13 @@ Format : [Versioning sémantique](https://semver.org/lang/fr/)
 
 ---
 
+## [1.6.1] — 2026-05-02
+
+### Corrigé
+- **{licences} — nombre d'utilisations incorrect** : la v1.6.0 utilisait `delivre_x_times` (capacité de stock globale de la clé), ce qui affichait un chiffre erroné. La correction lit la meta `_lflow_licenses` de la commande et compte les occurrences de chaque `license_id` pour obtenir le nombre réel de fois que la clé a été livrée à CE client pour CETTE commande — identique à la logique de l'email LicenceFlow.
+
+---
+
 ## [1.6.0] — 2026-04-30
 
 ### Ajouté

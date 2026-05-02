@@ -158,7 +158,7 @@ class WTAN_Notifier {
 			'{produits}'        => implode( "\n", $lines ),
 			'{nb_articles}'     => (string) $order->get_item_count(),
 			'{note_client}'     => $order->get_customer_note(),
-			'{licences}'        => $this->build_licences_text( (int) $order->get_id() ),
+			'{licences}'        => $this->build_licences_text( $order ),
 			'{telechargements}' => $this->build_downloads_text( $order ),
 		];
 	}
@@ -223,7 +223,7 @@ class WTAN_Notifier {
 	 * @param  int $order_id ID de la commande.
 	 * @return string
 	 */
-	private function build_licences_text( int $order_id ): string {
+	private function build_licences_text( WC_Abstract_Order $order ): string {
 		if ( ! class_exists( 'LicenceFlow_License_DB' ) ) {
 			return '';
 		}
@@ -232,10 +232,18 @@ class WTAN_Notifier {
 			return '';
 		}
 
-		$licenses = LicenceFlow_License_DB::get_by_order( $order_id );
+		$licenses = LicenceFlow_License_DB::get_by_order( (int) $order->get_id() );
 
 		if ( empty( $licenses ) ) {
 			return '';
+		}
+
+		// Compter combien de fois chaque licence a été livrée à CE client pour CETTE commande.
+		// La meta _lflow_licenses contient un tableau d'IDs avec doublons (ex: [123, 123] = livré 2 fois).
+		$delivered_ids = $order->get_meta( '_lflow_licenses' );
+		$id_counts     = [];
+		if ( is_array( $delivered_ids ) && ! empty( $delivered_ids ) ) {
+			$id_counts = array_count_values( array_map( 'intval', $delivered_ids ) );
 		}
 
 		$lines = [];
@@ -251,9 +259,9 @@ class WTAN_Notifier {
 
 			$entry = '🔑 ' . $product_name . "\n" . $key_display;
 
-			$uses = (int) ( $lic['delivre_x_times'] ?? 1 );
-			if ( $uses > 1 ) {
-				$entry .= "\n🔁 Utilisable " . $uses . ' fois';
+			$times = isset( $id_counts[ (int) $lic['license_id'] ] ) ? $id_counts[ (int) $lic['license_id'] ] : 1;
+			if ( $times > 1 ) {
+				$entry .= "\n🔁 Utilisable " . $times . ' fois';
 			}
 
 			if ( ! empty( $lic['expiration_date'] ) ) {
