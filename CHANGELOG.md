@@ -16,7 +16,9 @@ Format : [Versioning sémantique](https://semver.org/lang/fr/)
 
 ---
 
-## [1.6.1] — 2026-07-09
+## [1.6.2] — 2026-07-09
+
+> Note : cette correction avait initialement été publiée par erreur sous le numéro 1.6.1, en collision avec la vraie version 1.6.1 ci-dessous (déjà taguée et publiée le 2026-05-02). Renommée en 1.6.2 pour lever l'ambiguïté.
 
 ### Corrigé
 - **Normalisation téléphone Côte d'Ivoire et Bénin** : `WTAN_Phone::normalize()` retirait à tort le premier chiffre des numéros CI et BJ, causant des échecs d'envoi WhatsApp
@@ -26,6 +28,13 @@ Format : [Versioning sémantique](https://semver.org/lang/fr/)
   - Nouvel indicateur interne `trunk_zero` par pays dans la map pour distinguer les deux comportements
 - **Validation renforcée** : un numéro déjà préfixé d'un indicatif international (≥10 chiffres, pas de "0" initial) est désormais rejeté si sa longueur ne correspond pas à celle attendue pour le pays de facturation connu, au lieu d'être envoyé tel quel (évite l'envoi vers des numéros incomplets, ex: ancien format CI/BJ saisi avec le nouvel indicatif)
 - Le fallback "8 chiffres → Burkina Faso" ne s'applique plus que si le pays de facturation est totalement inconnu — évite qu'un numéro CI/BJ mal saisi (ancien format) soit silencieusement mal orienté vers un numéro burkinabè
+
+---
+
+## [1.6.1] — 2026-05-02
+
+### Corrigé
+- **{licences} — nombre d'utilisations incorrect** : la v1.6.0 utilisait `delivre_x_times` (capacité de stock globale de la clé), ce qui affichait un chiffre erroné. La correction lit la meta `_lflow_licenses` de la commande et compte les occurrences de chaque `license_id` pour obtenir le nombre réel de fois que la clé a été livrée à CE client pour CETTE commande — identique à la logique de l'email LicenceFlow.
 
 ---
 
