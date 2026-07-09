@@ -6,6 +6,19 @@ Format : [Versioning sémantique](https://semver.org/lang/fr/)
 
 ---
 
+## [1.6.1] — 2026-07-09
+
+### Corrigé
+- **Normalisation téléphone Côte d'Ivoire et Bénin** : `WTAN_Phone::normalize()` retirait à tort le premier chiffre des numéros CI et BJ, causant des échecs d'envoi WhatsApp
+  - CI : depuis la réforme du 31/01/2021, les numéros comportent 10 chiffres pleins (préfixe opérateur `07`/`05`/`01`/`08`/`09` inclus) — ce chiffre n'est pas un zéro de tronc à retirer
+  - BJ : depuis la réforme du 30/11/2024, tous les numéros ont un préfixe fixe `01` intégré, également conservé désormais
+  - Ex: `0768319147` avec pays `CI` → `2250768319147@s.whatsapp.net` (corrige l'exemple erroné publié en 1.5.0)
+  - Nouvel indicateur interne `trunk_zero` par pays dans la map pour distinguer les deux comportements
+- **Validation renforcée** : un numéro déjà préfixé d'un indicatif international (≥10 chiffres, pas de "0" initial) est désormais rejeté si sa longueur ne correspond pas à celle attendue pour le pays de facturation connu, au lieu d'être envoyé tel quel (évite l'envoi vers des numéros incomplets, ex: ancien format CI/BJ saisi avec le nouvel indicatif)
+- Le fallback "8 chiffres → Burkina Faso" ne s'applique plus que si le pays de facturation est totalement inconnu — évite qu'un numéro CI/BJ mal saisi (ancien format) soit silencieusement mal orienté vers un numéro burkinabè
+
+---
+
 ## [1.6.0] — 2026-04-30
 
 ### Ajouté
