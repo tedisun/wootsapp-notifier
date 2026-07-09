@@ -17,6 +17,7 @@ class WTAN_Admin {
 		add_action( 'admin_init', [ $this, 'handle_clear_logs' ] );
 		add_action( 'admin_init', [ $this, 'handle_export_csv' ] );
 		add_action( 'wp_ajax_wtan_test_send', [ $this, 'ajax_test_send' ] );
+		add_action( 'wp_ajax_wtan_check_update', [ $this, 'ajax_check_update' ] );
 		add_action( 'admin_footer', [ $this, 'inline_script' ] );
 	}
 
@@ -225,6 +226,19 @@ class WTAN_Admin {
 				<?php esc_html_e( 'Envoyer un message de test', 'wootsapp-notifier' ); ?>
 			</button>
 			<span id="wtan-test-result" style="margin-left:12px;vertical-align:middle;"></span>
+
+			<hr />
+			<h2><?php esc_html_e( 'Mises à jour', 'wootsapp-notifier' ); ?></h2>
+			<p>
+				<?php printf(
+					esc_html__( 'Version installée : %s', 'wootsapp-notifier' ),
+					'<strong>' . esc_html( WTAN_VERSION ) . '</strong>'
+				); ?>
+			</p>
+			<button id="wtan-check-update-btn" class="button button-secondary">
+				<?php esc_html_e( 'Vérifier les mises à jour maintenant', 'wootsapp-notifier' ); ?>
+			</button>
+			<div id="wtan-update-result" style="margin-top:12px;"></div>
 		</div>
 		<?php
 	}
@@ -563,6 +577,26 @@ class WTAN_Admin {
 	}
 
 	// -------------------------------------------------------------------------
+	// AJAX — Vérifier les mises à jour
+	// -------------------------------------------------------------------------
+
+	public function ajax_check_update(): void {
+		check_ajax_referer( 'wtan_check_update', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Permission refusée.' );
+		}
+
+		$status = WTAN_Updater::fetch_update_status();
+
+		if ( ! empty( $status['error'] ) ) {
+			wp_send_json_error( $status['message'] ?? 'Erreur inconnue.' );
+		}
+
+		wp_send_json_success( $status );
+	}
+
+	// -------------------------------------------------------------------------
 	// Scripts inline
 	// -------------------------------------------------------------------------
 
@@ -607,6 +641,49 @@ class WTAN_Admin {
 						result.style.color = '#c62828';
 					})
 					.finally(function () { btn.disabled = false; });
+				});
+			}
+
+			// Bouton vérifier les mises à jour.
+			var updateBtn = document.getElementById('wtan-check-update-btn');
+			if (updateBtn) {
+				updateBtn.addEventListener('click', function () {
+					var result = document.getElementById('wtan-update-result');
+					result.innerHTML = 'Vérification…';
+					updateBtn.disabled = true;
+
+					var data = new FormData();
+					data.append('action', 'wtan_check_update');
+					data.append('nonce', '<?php echo esc_js( wp_create_nonce( 'wtan_check_update' ) ); ?>');
+
+					fetch('<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>', {
+						method: 'POST',
+						body: data,
+					})
+					.then(function (r) { return r.json(); })
+					.then(function (json) {
+						if (!json.success) {
+							result.innerHTML = '❌ ' + json.data;
+							return;
+						}
+
+						var d = json.data;
+
+						if (!d.has_update) {
+							result.innerHTML = '✅ WootsApp Notifier ' + d.current + ' est à jour.';
+						} else {
+							result.innerHTML =
+								'⬆️ Nouvelle version disponible : ' + d.latest +
+								' <span style="color:#666;">(installée : ' + d.current + ')</span><br>' +
+								'<a href="' + d.update_url + '" class="button button-primary" style="margin-top:8px;margin-right:8px;">' +
+								'⬇️ Installer la mise à jour ' + d.latest + '</a>' +
+								'<a href="' + d.changelog_url + '" class="button" target="_blank" rel="noopener">📋 Notes de version</a>';
+						}
+					})
+					.catch(function () {
+						result.innerHTML = '❌ Erreur réseau.';
+					})
+					.finally(function () { updateBtn.disabled = false; });
 				});
 			}
 

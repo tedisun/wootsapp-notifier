@@ -6,6 +6,16 @@ Format : [Versioning sémantique](https://semver.org/lang/fr/)
 
 ---
 
+## [1.7.0] — 2026-07-09
+
+### Ajouté
+- **Vérification manuelle des mises à jour** : nouveau bouton "Vérifier les mises à jour maintenant" dans WA Notify > Réglages (section "Mises à jour"), même fonctionnement que LicenceFlow
+  - Interroge immédiatement l'API GitHub (sans attendre le cycle de 12h de WordPress) via AJAX (`wtan_check_update`)
+  - Affiche "à jour" ou la nouvelle version disponible avec un bouton "Installer la mise à jour" (lance directement l'installation WordPress) et un lien vers les notes de version GitHub
+  - Nouvelle méthode statique `WTAN_Updater::fetch_update_status()`
+
+---
+
 ## [1.6.1] — 2026-07-09
 
 ### Corrigé

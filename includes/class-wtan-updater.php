@@ -29,6 +29,68 @@ class WTAN_Updater {
 	}
 
 	/**
+	 * Force-rafraîchit le cache et retourne un statut de mise à jour structuré.
+	 * Utilisé par le bouton "Vérifier les mises à jour maintenant" de la page Réglages.
+	 *
+	 * @return array{
+	 *   error: bool, message?: string,
+	 *   current?: string, latest?: string, has_update?: bool,
+	 *   update_url?: string, changelog_url?: string
+	 * }
+	 */
+	public static function fetch_update_status(): array {
+		delete_transient( 'wtan_github_latest_release' );
+
+		$release = self::get_latest_release();
+
+		if ( ! $release ) {
+			return [
+				'error'   => true,
+				'message' => 'Impossible de contacter GitHub. Vérifiez votre connexion et réessayez.',
+			];
+		}
+
+		$latest_version = ltrim( $release['tag_name'], 'v' );
+		$current        = WTAN_VERSION;
+		$has_update     = version_compare( $latest_version, $current, '>' );
+
+		$result = [
+			'error'      => false,
+			'current'    => $current,
+			'latest'     => $latest_version,
+			'has_update' => $has_update,
+		];
+
+		if ( $has_update ) {
+			// Alimente le transient WP pour que l'URL de mise à jour fonctionne immédiatement.
+			$site_transient = get_site_transient( 'update_plugins' );
+			if ( ! is_object( $site_transient ) ) {
+				$site_transient = new stdClass();
+			}
+			if ( ! isset( $site_transient->checked ) ) {
+				$site_transient->checked = [];
+			}
+			$site_transient->checked[ self::PLUGIN_FILE ]  = $current;
+			$site_transient->response[ self::PLUGIN_FILE ] = (object) [
+				'slug'        => self::PLUGIN_SLUG,
+				'plugin'      => self::PLUGIN_FILE,
+				'new_version' => $latest_version,
+				'url'         => 'https://github.com/' . self::GITHUB_REPO,
+				'package'     => $release['zip_url'],
+			];
+			set_site_transient( 'update_plugins', $site_transient );
+
+			$result['update_url']    = wp_nonce_url(
+				admin_url( 'update.php?action=upgrade-plugin&plugin=' . rawurlencode( self::PLUGIN_FILE ) ),
+				'upgrade-plugin_' . self::PLUGIN_FILE
+			);
+			$result['changelog_url'] = 'https://github.com/' . self::GITHUB_REPO . '/releases/tag/' . $release['tag_name'];
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Injecte la mise à jour dans le transient WordPress si une version plus récente
 	 * est disponible sur GitHub.
 	 *
@@ -40,7 +102,7 @@ class WTAN_Updater {
 			return $transient;
 		}
 
-		$release = $this->get_latest_release();
+		$release = self::get_latest_release();
 
 		if ( ! $release ) {
 			return $transient;
@@ -87,7 +149,7 @@ class WTAN_Updater {
 			return $result;
 		}
 
-		$release = $this->get_latest_release();
+		$release = self::get_latest_release();
 
 		if ( ! $release ) {
 			return $result;
@@ -146,7 +208,7 @@ class WTAN_Updater {
 	 *
 	 * @return array{tag_name:string,zip_url:string,body:string}|null
 	 */
-	private function get_latest_release(): ?array {
+	private static function get_latest_release(): ?array {
 		$cache_key = 'wtan_github_latest_release';
 		$cached    = get_transient( $cache_key );
 
